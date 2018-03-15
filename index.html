@@ -2,16 +2,168 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,minimal-ui" />
 <title>Debug Tool: bproxy</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
+<link rel="stylesheet" href="./sunburst.css">
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
 
-<h1>bproxy</h1>
 
-<h2>Front-end development of debugging tools</h2>
+<div class="jumbotron jumbotron-fluid">
+	<div class="container">
+		<h1 class="display-4">bproxy</h1>
+		<p class="lead">A free web debug tool for devolper</p>
+	</div>
+</div>
 
-<ul>
-	<li><img src="./windows.png" alt=""></li>
-</ul>
+<h3>Support</h3>
+
+
+<h3>Install</h3>
+<pre class="prettyprint">
+$$> npm install bproxy -g
+</pre>
+
+<h3>Upgrade</h3>
+<pre class="prettyprint">
+$$> npm install bproxy@latest -g
+</pre>
+
+
+<h3>Show Options</h3>
+<pre class="prettyprint">
+$$> bproxy
+
+Usage: bproxy [options]
+
+Options:
+
+	-V, --version         output the version number
+	-s ,--start           start bproxy
+	-c, --config [value]  specifies the profile path
+	-p, --port [value]    specify the app port
+	-i, --install         install bproxy certificate
+	-h, --help            output usage information
+</pre>
+
+<h3>Star App</h3>
+<pre class="prettyprint">
+$$> bproxy --start
+
+[Info] bproxy UI Pannel is http://0.0.0.0:9000/
+[Info] bproxy Service is running at http://0.0.0.0:8888/. Press Ctrl+C to stop.
+		
+</pre>
+
+<h3>Install Certificate</h3>
+<pre class="prettyprint">
+$$> bproxy --install
+
+[bproxy certificate] /Users/${your username}/.AppData/bproxy/bproxy.ca.crt
+		
+</pre>
+
+
+<pre class="prettyprint lang-js">
+var host = `
+127.0.0.1 v.qq.com
+`
+
+var rules = [
+	{
+		regx: 'index.css',
+		host: '127.0.0.1'
+	}
+]
+
+module.exports = {
+	host: host,
+	rules: rules
+}
+</pre>
+
+<h3>full example</h3>
+<pre class="prettyprint lang-js">
+var host = `
+127.0.0.1 v.qq.com
+`
+var rules = [
+	// single file host
+	{
+		regx: 'index.css',
+		host: '127.0.0.1'
+	},
+	// host for full path
+	{
+		regx: 'http://v.qq.com/tv/',
+		host: '127.0.0.1'
+	},
+	// filetype host
+	{
+		regx: /\w+\.mp4/,
+		host: '127.0.0.1'
+	},
+	// for ajax
+	{
+		regx: 'data.json',
+		file: '/path/to/data.json',
+		responseHeaders:{
+			'Allow-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Credentials': 'true'
+		}
+	},
+	// limit network speed
+	{
+		regx: /\w+\.png|jpg|jpeg|gif|webm/i,
+		delay: 2000 //2s
+	},
+	// combo
+	{
+		regx: 'http://vm.gtimg.cn/c/=/tencentvideo_v1/script/txv.core.js,/tencentvideo/script/fansadmin/menu.js',
+		response: function(url, resHeader, response, request){
+			var fs = require('fs')
+			var menuJs = fs.readFileSync('/local/path/to/.dev/menu.js','utf-8')
+			response.writeHeader(200, Object.assign({}, resHeader));
+			request.get('http://vm.gtimg.cn/tencentvideo_v1/script/txv.core.js', function(error, resp, body){
+				response.end(body + '\n' + menuJs)
+			})
+		}
+	},
+	// jsonp
+	{
+		regx: /cgi\?callback=/,
+		jsonp: '/path/to/localfile.json',
+		callbackParameter: 'callback'
+	},
+	// image load fail
+	{
+		regx: /\w+\.png|jpg|jpeg|gif|webm/i,
+		status: 404
+	},
+	// proxy
+	{
+		regx: 'baidu.com',
+		proxy: 'http://proxy.company.com:8080'
+	}
+]
+module.exports = {
+	host: host,
+	rules: rules,
+	
+	// https
+	enableSSLProxying: true,
+	SSLProxyList: [
+		'v.qq.com:443',
+		'y.qq.com:443'
+	]
+
+	// or https
+	enableSSLProxying: 'all'
+}
+</pre>
+
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?autorun=true"></script>
 </body>
 </html>
